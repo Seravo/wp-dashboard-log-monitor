@@ -1,5 +1,4 @@
 <?php
-<<<<<<< HEAD:access_log_monitor_widget.php
 /**
  * Plugin Name: Dashboard log monitor
  * Plugin URI: https://github.com/Seravo/wp-dashboard-log-monitor
