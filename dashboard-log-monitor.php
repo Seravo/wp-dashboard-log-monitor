@@ -1,17 +1,15 @@
 <?php
+<<<<<<< HEAD:access_log_monitor_widget.php
 /**
  * Plugin Name: Dashboard log monitor
- * Plugin URI: https://github.com/Seravo/wp-custom-bulk-actions
+ * Plugin URI: https://github.com/Seravo/wp-dashboard-log-monitor
  * Description: Take a sneak peek on your access logs from the wordpress dashboard.
  * Author: Onni Hakala / Seravo Oy
  * Author URI: http://seravo.fi
- * Version: 0.1.1
- * License: GPLv3
+ * Version: 1.0
+ * License: GPLv2 or later
 */
 /** Copyright 2014 Seravo Oy
-  This program is free software; you can redistribute it and/or modify
-  it under the terms of the GNU General Public License, version 3, as
-  published by the Free Software Foundation.
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
@@ -19,9 +17,9 @@
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-*/
+ */
 
-define('__ROOT__', dirname(__FILE__)); 
+define('__ROOT__', dirname(__FILE__));
 
 require_once __ROOT__."/log-parser/src/Kassner/LogParser/FormatException.php";
 require_once __ROOT__."/log-parser/src/Kassner/LogParser/LogParser.php";
@@ -32,14 +30,14 @@ function load_custom_wp_admin_style() {
 }
 add_action( 'admin_enqueue_scripts', 'load_custom_wp_admin_style' );
 
-add_action('wp_dashboard_setup', array('Access_Log_Monitor_Widget','init') );
+add_action('wp_dashboard_setup', array('Dashboard_Log_Monitor_Widget','init') );
 
-class Access_Log_Monitor_Widget {
+class Dashboard_Log_Monitor_Widget {
 
     /**
      * The id of this widget.
      */
-    const wid = 'access_log_monitor';
+    const wid = 'dashboard_log_monitor';
     /** By Default exclude status codes:
      * - successful requests
      * - redirects
@@ -72,9 +70,9 @@ class Access_Log_Monitor_Widget {
         //Register the widget...
         wp_add_dashboard_widget(
             self::wid,                                  //A unique slug/ID
-            __( 'Access Log monitor', 'nouveau' ),      //Visible name for the widget
-            array('Access_Log_Monitor_Widget','widget'),      //Callback for the main widget content
-            array('Access_Log_Monitor_Widget','config')       //Optional callback for widget configuration content
+            __( 'Log monitor', 'nouveau' ),      //Visible name for the widget
+            array('Dashboard_Log_Monitor_Widget','widget'),      //Callback for the main widget content
+            array('Dashboard_Log_Monitor_Widget','config')       //Optional callback for widget configuration content
         );
     }
 
@@ -145,8 +143,8 @@ class Access_Log_Monitor_Widget {
      * Saves an array of options for a single dashboard widget to the database.
      * Can also be used to define default values for a widget.
      *
-     * @param string $widget_id The name of the widget being updated 
-     * @param array $args An associative array of options being saved. 
+     * @param string $widget_id The name of the widget being updated
+     * @param array $args An associative array of options being saved.
      * @param bool $add_only If true, options will not be added if widget options already exist
      */
     public static function update_dashboard_widget_options( $widget_id , $args=array(), $add_only=false )
@@ -181,10 +179,10 @@ class Access_Log_Monitor_Widget {
         if ( false === $lines ) {
              // this code runs when there is no valid transient set
             $lines = self::last_log_lines($filename,$line_count);
-            set_transient( 'access-log-monitoring', $lines, 30 * MINUTE_IN_SECONDS );
+            set_transient( 'access-log-monitoring-lines', $lines, 30 * MINUTE_IN_SECONDS );
         }
         return $lines;
-        
+
     }
 
     /**
