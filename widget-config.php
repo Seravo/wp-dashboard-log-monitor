@@ -20,16 +20,21 @@
       );
     }
 ?>
-
-<p>
-<label>Line count:</label>
-<input type="number" name="lineCount" value=<?php echo(self::get_dashboard_widget_option(self::wid, 'line_count',self::default_line_count)); ?> />
-</p>
-<p>
-  <label>Exclude status codes (separated by ','):</label>
-  <input type="text" name="excludeStatuses" value=<?php echo(self::get_dashboard_widget_option(self::wid, 'exclude_status_codes',self::default_exclude)); ?> />
-</p>
-<p>
-  <label>Access logfile:</label>
-  <input type="text" name="accessLogFile" value=<?php echo(self::get_dashboard_widget_option(self::wid, 'access_log_path',self::default_access_log)); ?> />
-</p>
+<div class="log-monitor-options">
+  <p>
+  <label><?php _e("Line count:"); ?></label><br>
+  <input type="number" name="lineCount" value="<?php echo(htmlspecialchars(self::get_dashboard_widget_option(self::wid, 'line_count',self::default_line_count))); ?>"/>
+  </p>
+  <p>
+    <label><?php _e("Exclude status codes (separated by ','):"); ?></label><br>
+    <input type="text" name="excludeStatuses" value="<?php echo(htmlspecialchars(self::get_dashboard_widget_option(self::wid, 'exclude_status_codes',self::default_exclude))); ?>" />
+  </p>
+  <p>
+    <label><?php _e("Access log format:"); ?></label><br>
+    <input type="text" name="accessLogFormat" value="<?php echo(htmlspecialchars(self::get_dashboard_widget_option(self::wid, 'access_log_format',self::default_access_log_format))); ?>" />
+  </p>
+  <p>
+    <label><?php _e("Access logfile:"); ?></label><br>
+    <input type="text" name="accessLogFile" value="<?php echo(htmlspecialchars(self::get_dashboard_widget_option(self::wid, 'access_log_path',self::default_access_log_path))); ?>" />
+  </p>
+</div>

@@ -1,11 +1,24 @@
 <?php
-/*
-Plugin Name: Access Log monitor
-Description: Monitor your logs straight from admin dashboard
-Version: 1.0
-Author: Onni Hakala / Seravo Oy
-Author URI: http://seravo.fi
-License: GPLv2 or later
+/**
+ * Plugin Name: Dashboard log monitor
+ * Plugin URI: https://github.com/Seravo/wp-custom-bulk-actions
+ * Description: Take a sneak peek on your access logs from the wordpress dashboard.
+ * Author: Onni Hakala / Seravo Oy
+ * Author URI: http://seravo.fi
+ * Version: 0.1.1
+ * License: GPLv3
+*/
+/** Copyright 2014 Seravo Oy
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License, version 3, as
+  published by the Free Software Foundation.
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 define('__ROOT__', dirname(__FILE__)); 
@@ -27,10 +40,17 @@ class Access_Log_Monitor_Widget {
      * The id of this widget.
      */
     const wid = 'access_log_monitor';
+    /** By Default exclude status codes:
+     * - successful requests
+     * - redirects
+     * - not modified
+     * - 499 because nginx prints these everytime when wp-cron is activated
+     */
     const default_exclude = "200,301,302,304,499";
     const default_line_count = 10;
     const default_extended_info = false;
-    const default_access_log = '/data/log/nginx-access.log';
+    const default_access_log_path = '/data/log/nginx-access.log';
+    const default_access_log_format = '%h %a %{User-Identifier}i %u %t "%r" %>s %b "%{Referer}i" "%{User-Agent}i" %{Cache-Status}i %T';
 
     /**
      * Hook to wp_dashboard_setup to add the widget.
@@ -43,7 +63,8 @@ class Access_Log_Monitor_Widget {
                 'line_count' => self::default_line_count,
                 'exclude_status_codes' => self::default_exclude,
                 'extended_info' => self::default_extended_info,
-                'access_log_path' => self::default_access_log
+                'access_log_path' => self::default_access_log_path,
+                'access_log_format' => self::default_access_log_format
             ),
             true                                        //Add only (will not update existing options)
         );
@@ -193,7 +214,8 @@ class Access_Log_Monitor_Widget {
         $exclude_array = array_filter(explode(",", $exclude_status),'strlen');
 
         // For parsing logs with common log format
-        $parser = new \Kassner\LogParser\LogParser('%h %a %{User-Identifier}i %u %t "%r" %>s %b "%{Referer}i" "%{User-Agent}i" %{Cache-Status}i %T');
+        $log_format = self::get_dashboard_widget_option(self::wid, 'access_log_format');
+        $parser = new \Kassner\LogParser\LogParser($log_format);
         $fh = fopen($path, 'r');
         // go to the end of the file
         fseek($fh, 0, SEEK_END);
