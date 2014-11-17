@@ -16,12 +16,12 @@
 </p>
 <table class="log-monitor">
 <?php 
-$lines = self::get_access_log_lines();
+$lines = self::get_access_log_lines($errors);
 foreach ($lines as $index => $line) {
   if (!isset($line->status))
     continue;
 ?>
-<tr class="<?php echo ($index%2 == 0 ? '' : 'alternate') ?>">
+<tr class="<?php echo (($index+1)%2 == 0 ? '' : 'alternate') ?>">
   <td class="time-table">
     <p class="time" style="white-space:nowrap"><?php echo strftime(  "%b %d @ %H:%M:%S", $line->stamp ); ?></p>
   </td>

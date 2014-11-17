@@ -5,9 +5,9 @@
  */
     $line_count = ( isset( $_POST['lineCount'] ) ) ? stripslashes( $_POST['lineCount'] ) : '';
     $exclude_status_codes = ( isset( $_POST['excludeStatuses'] ) ) ? stripslashes( $_POST['excludeStatuses'] ) : '';
-    
     $access_log_path = ( isset( $_POST['accessLogFile'] ) ) ? stripslashes( $_POST['accessLogFile'] ) : '';
-    
+    $access_log_format = ( isset( $_POST['accessLogFormat'] ) ) ? stripslashes( $_POST['accessLogFormat'] ) : '';
+
     //Update options if not null
     if ($line_count != null && $exclude_status_codes != null && $access_log_path != null) {
       self::update_dashboard_widget_options(
@@ -15,7 +15,8 @@
               array(                                      //Associative array of options & default values
                   'line_count' => $line_count,
                   'exclude_status_codes' => $exclude_status_codes,
-                  'access_log_path' => $access_log_path
+                  'access_log_path' => $access_log_path,
+                  'access_log_format' => $access_log_format
               )
       );
     }

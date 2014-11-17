@@ -79,16 +79,38 @@ class Dashboard_Log_Monitor_Widget {
      * Load the widget code
      */
     public static function widget() {
-        require_once( 'widget.php' );
+        $lines = self::last_log_lines(self::get_dashboard_widget_option(self::wid, 'access_log_path'), 1,self::get_dashboard_widget_option(self::wid, 'access_log_format'));
+        if (!file_exists(self::get_dashboard_widget_option(self::wid, 'access_log_path')))
+            echo "logfile: ".self::get_dashboard_widget_option(self::wid, 'access_log_path')." not found!";
+        elseif (gettype($lines[0]) == "string") {
+            ?>
+        <p><?php _e("Log format has problems."); ?></p>
+        <p><?php _e("Format is:"); ?></p>
+        <p><?php echo self::get_dashboard_widget_option(self::wid, 'access_log_format') ?></p>
+        <p><?php _e("Log lines look like:"); ?></p>
+        <p><?php echo $lines[0] ?></p>
+        <a href="https://github.com/kassner/log-parser"><?php _e("See more info on log format strings here") ?></a>
+        <?php }
+        else
+            require_once( 'widget.php' );
     }
 
     /**
      * Load widget config code.
      *
-     * This is what will display when an admin clicks
+     * This is what will display when an admin clicks 'edit'
      */
     public static function config() {
         require_once( 'widget-config.php' );
+    }
+
+    /**
+     * Load widget config code.
+     *
+     * This is what will display when an admin clicks 'edit'
+     */
+    public static function clear_cache() {
+        delete_transient( 'access-log-monitoring-lines' );
     }
 
     /**
@@ -148,6 +170,8 @@ class Dashboard_Log_Monitor_Widget {
      */
     public static function update_dashboard_widget_options( $widget_id , $args=array(), $add_only=false )
     {
+        #Clear earlier transients when updating
+        self::clear_cache();
         //Fetch ALL dashboard widget options from the db...
         $opts = get_option( 'dashboard_widget_options' );
 
@@ -170,15 +194,16 @@ class Dashboard_Log_Monitor_Widget {
     /**
      * Gets access log lines
      */
-    public static function get_access_log_lines($errors = null)
+    public static function get_access_log_lines($errors = null,$line_count = null)
     {
         $filename = self::get_dashboard_widget_option(self::wid, 'access_log_path');
-        $line_count = self::get_dashboard_widget_option(self::wid, 'line_count');
+        if (!$line_count)
+            $line_count = self::get_dashboard_widget_option(self::wid, 'line_count');
         $log_format = self::get_dashboard_widget_option(self::wid, 'access_log_format');
-        $lines = get_transient( 'access-log-monitoring-lines');
+        $lines = get_transient( 'access-log-monitoring-lines' );
         if ( false === $lines ) {
              // this code runs when there is no valid transient set
-            $lines = self::last_log_lines($filename,$line_count,$log_format);
+            $lines = self::last_log_lines($filename,$line_count,$log_format,$errors);
             set_transient( 'access-log-monitoring-lines', $lines, 30 * MINUTE_IN_SECONDS );
         }
         return $lines;
@@ -197,7 +222,7 @@ class Dashboard_Log_Monitor_Widget {
      * @param integer $lines Amount of lines to return
      */
 
-    private static function last_log_lines($path, $line_count, $log_format, $block_size = 512){
+    private static function last_log_lines($path, $line_count, $log_format, $errors = nil, $block_size = 512){
         $lines = array();
 
         // we will always have a fragment of a non-complete line
@@ -215,6 +240,8 @@ class Dashboard_Log_Monitor_Widget {
         
         $parser = new \Kassner\LogParser\LogParser($log_format);
         $fh = fopen($path, 'r');
+        if (!$fh)
+            return false;
         // go to the end of the file
         fseek($fh, 0, SEEK_END);
         do{
