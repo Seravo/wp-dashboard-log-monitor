@@ -5,7 +5,12 @@
  */
 ?>
 <p class="Description">
-  Tähän on haarukoitu sivustosi mahdollisia ongelmakohtia. Havaitsimme ne sivustosi lokitiedoista.
+<p class="Description">
+<?php _e("Showing significant lines from the site's access log."); ?><?php _e("Entries with the following https status codes have been omitted:"); ?> <?php echo self::get_dashboard_widget_option(self::wid, 'exclude_status_codes'); ?>
+</p>
+
+<p class="Description">
+<?php _e("See full log file in real time at:"); ?> <?php echo self::get_dashboard_widget_option(self::wid, 'access_log_path'); ?>
 </p>
 <table class="log-monitor">
 <?php 
@@ -52,5 +57,3 @@ foreach ($lines as $index => $line) {
 </tr>
 <?php } ?>
 </table>
-<p><?php _e("Älä näytä status koodeja:"); ?> <?php echo self::get_dashboard_widget_option(self::wid, 'exclude_status_codes'); ?></p>
-<p><?php _e("Lokitiedosto:"); ?> <?php echo self::get_dashboard_widget_option(self::wid, 'access_log_path'); ?></p>

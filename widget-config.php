@@ -30,6 +30,6 @@
   <input type="text" name="excludeStatuses" value=<?php echo(self::get_dashboard_widget_option(self::wid, 'exclude_status_codes',self::default_exclude)); ?> />
 </p>
 <p>
-  <label>Access logfile:</label>
+  <label>Access log path:</label>
   <input type="text" name="accessLogFile" value=<?php echo(self::get_dashboard_widget_option(self::wid, 'access_log_path',self::default_access_log)); ?> />
 </p>
