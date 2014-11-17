@@ -175,10 +175,11 @@ class Dashboard_Log_Monitor_Widget {
     {
         $filename = self::get_dashboard_widget_option(self::wid, 'access_log_path');
         $line_count = self::get_dashboard_widget_option(self::wid, 'line_count');
+        $log_format = self::get_dashboard_widget_option(self::wid, 'access_log_format');
         $lines = get_transient( 'access-log-monitoring-lines');
         if ( false === $lines ) {
              // this code runs when there is no valid transient set
-            $lines = self::last_log_lines($filename,$line_count);
+            $lines = self::last_log_lines($filename,$line_count,$log_format);
             set_transient( 'access-log-monitoring-lines', $lines, 30 * MINUTE_IN_SECONDS );
         }
         return $lines;
@@ -197,7 +198,7 @@ class Dashboard_Log_Monitor_Widget {
      * @param integer $lines Amount of lines to return
      */
 
-    private static function last_log_lines($path, $line_count, $block_size = 512){
+    private static function last_log_lines($path, $line_count, $log_format, $block_size = 512){
         $lines = array();
 
         // we will always have a fragment of a non-complete line
@@ -212,7 +213,7 @@ class Dashboard_Log_Monitor_Widget {
         $exclude_array = array_filter(explode(",", $exclude_status),'strlen');
 
         // For parsing logs with common log format
-        $log_format = self::get_dashboard_widget_option(self::wid, 'access_log_format');
+        
         $parser = new \Kassner\LogParser\LogParser($log_format);
         $fh = fopen($path, 'r');
         // go to the end of the file
