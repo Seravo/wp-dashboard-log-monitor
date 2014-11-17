@@ -5,8 +5,10 @@
  */
 ?>
 <p class="Description">
+<?php _e("Showing significant lines from the site's access log."); ?>
+</p>
 <p class="Description">
-<?php _e("Showing significant lines from the site's access log."); ?><?php _e("Entries with the following https status codes have been omitted:"); ?> <?php echo self::get_dashboard_widget_option(self::wid, 'exclude_status_codes'); ?>
+<?php _e("Entries with the following https status codes have been omitted:"); ?> <?php echo self::get_dashboard_widget_option(self::wid, 'exclude_status_codes'); ?>
 </p>
 
 <p class="Description">

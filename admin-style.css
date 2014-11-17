@@ -44,3 +44,7 @@
   text-align: left;
   vertical-align: top;
 }
+
+.log-monitor-options input {
+  width: 99%;
+}
