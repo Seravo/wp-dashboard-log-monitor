@@ -1,0 +1,46 @@
+/*
+ * Styles for log-monitors
+ */
+
+ .log-monitor {
+  overflow: auto;
+  width: 100%;
+  display: block;
+ }
+ .log-monitor p label {
+  display: block;
+ }
+ 
+.log-monitor .status-code {
+  padding: 5px;
+  border-radius: 10%;
+  color: white;
+  background-color: rgb(236, 227, 93);
+}
+
+.log-monitor .code-4xx {
+  background-color: rgb(250, 186, 53);
+}
+
+.log-monitor .code-5xx {
+  background-color: rgb(236, 93, 93) !important;
+}
+
+.log-monitor .code-2xx, .log-monitor .code-3xx {
+  background-color: rgb(143, 236, 93) !important;
+}
+.log-monitor .time-table {
+  vertical-align: top;
+}
+.log-monitor .time-table p {
+  margin: 1px;
+  margin-top: 10px;
+  font-size: 11px;
+}
+.log-monitor .request-table > td:first-child {
+  margin: 20px 0 20px 0;
+}
+.log-monitor .request-table th {
+  text-align: left;
+  vertical-align: top;
+}
