@@ -177,7 +177,7 @@ class Dashboard_Log_Monitor_Widget {
         if ( false === $lines ) {
              // this code runs when there is no valid transient set
             $lines = self::last_log_lines($filename,$line_count);
-            set_transient( 'access-log-monitoring', $lines, 30 * MINUTE_IN_SECONDS );
+            set_transient( 'access-log-monitoring-lines', $lines, 30 * MINUTE_IN_SECONDS );
         }
         return $lines;
 
