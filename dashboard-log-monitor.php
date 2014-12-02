@@ -5,7 +5,7 @@
  * Description: Take a sneak peek on your access logs from the wordpress dashboard.
  * Author: Onni Hakala / Seravo Oy
  * Author URI: http://seravo.fi
- * Version: 1.0.1
+ * Version: 1.0.2
  * License: GPLv2 or later
 */
 /** Copyright 2014 Seravo Oy
@@ -222,7 +222,7 @@ class Dashboard_Log_Monitor_Widget {
      * @param integer $lines Amount of lines to return
      */
 
-    private static function last_log_lines($path, $line_count, $log_format, $errors = nil, $block_size = 512){
+    private static function last_log_lines($path, $line_count, $log_format, $errors = null, $block_size = 512){
         $lines = array();
 
         // we will always have a fragment of a non-complete line

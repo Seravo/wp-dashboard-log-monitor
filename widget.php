@@ -16,7 +16,7 @@
 </p>
 <table class="log-monitor">
 <?php 
-$lines = self::get_access_log_lines($errors);
+$lines = self::get_access_log_lines();
 foreach ($lines as $index => $line) {
   if (!isset($line->status))
     continue;
