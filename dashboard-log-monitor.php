@@ -5,7 +5,7 @@
  * Description: Take a sneak peek on your access logs from the wordpress dashboard.
  * Author: Onni Hakala / Seravo Oy
  * Author URI: http://seravo.fi
- * Version: 1.0.2
+ * Version: 1.0.3
  * License: GPLv2 or later
 */
 /** Copyright 2014 Seravo Oy
@@ -24,8 +24,11 @@ require_once __ROOT__."/log-parser/src/Kassner/LogParser/FormatException.php";
 require_once __ROOT__."/log-parser/src/Kassner/LogParser/LogParser.php";
 
 function load_custom_wp_admin_style() {
-        wp_register_style( 'custom_wp_admin_css', plugins_url('/admin-style.css', __FILE__), false, '1.0.0' );
-        wp_enqueue_style( 'custom_wp_admin_css' );
+    // Only allow admins to use this
+    if (!current_user_can('activate_plugins')) { return; }
+    
+    wp_register_style( 'custom_wp_admin_css', plugins_url('/admin-style.css', __FILE__), false, '1.0.0' );
+    wp_enqueue_style( 'custom_wp_admin_css' );
 }
 add_action( 'admin_enqueue_scripts', 'load_custom_wp_admin_style' );
 
@@ -53,6 +56,9 @@ class Dashboard_Log_Monitor_Widget {
      * Hook to wp_dashboard_setup to add the widget.
      */
     public static function init() {
+        // Only allow admins to use this
+        if (!current_user_can('activate_plugins')) { return; }
+
         //Register widget settings...
         self::update_dashboard_widget_options(
             self::wid,                                  //The  widget id
