@@ -236,7 +236,7 @@ class Dashboard_Log_Monitor_Widget {
         $leftover = "";
 
         // Exclude status codes
-        $exclude_status = self::default_exclude;
+        $exclude_status = self::get_dashboard_widget_option(self::wid, 'exclude_status_codes');
 
         // Remove whitespace and empty values
         $exclude_status = preg_replace('/\s+/', '', $exclude_status);
