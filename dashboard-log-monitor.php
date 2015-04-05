@@ -26,7 +26,7 @@ require_once __ROOT__."/log-parser/src/Kassner/LogParser/LogParser.php";
 function load_custom_wp_admin_style() {
     // Only allow admins to use this
     if (!current_user_can('activate_plugins')) { return; }
-    
+
     wp_register_style( 'custom_wp_admin_css', plugins_url('/admin-style.css', __FILE__), false, '1.0.0' );
     wp_enqueue_style( 'custom_wp_admin_css' );
 }
@@ -85,20 +85,29 @@ class Dashboard_Log_Monitor_Widget {
      * Load the widget code
      */
     public static function widget() {
-        $lines = self::last_log_lines(self::get_dashboard_widget_option(self::wid, 'access_log_path'), 1,self::get_dashboard_widget_option(self::wid, 'access_log_format'));
-        if (!file_exists(self::get_dashboard_widget_option(self::wid, 'access_log_path')))
-            echo "logfile: ".self::get_dashboard_widget_option(self::wid, 'access_log_path')." not found!";
-        elseif (gettype($lines[0]) == "string") {
-            ?>
-        <p><?php _e("Log format has problems."); ?></p>
-        <p><?php _e("Format is:"); ?></p>
-        <p><?php echo self::get_dashboard_widget_option(self::wid, 'access_log_format') ?></p>
-        <p><?php _e("Log lines look like:"); ?></p>
-        <p><?php echo $lines[0] ?></p>
-        <a href="https://github.com/kassner/log-parser"><?php _e("See more info on log format strings here") ?></a>
-        <?php }
-        else
-            require_once( 'widget.php' );
+        if (!file_exists(self::get_dashboard_widget_option(self::wid, 'access_log_path'))) {
+          echo "logfile: ".self::get_dashboard_widget_option(self::wid, 'access_log_path')." not found!";
+          return;
+        }
+        try {
+          $lines = self::last_log_lines(self::get_dashboard_widget_option(self::wid, 'access_log_path'), 1,self::get_dashboard_widget_option(self::wid, 'access_log_format'));
+        } catch (Exception $e) {
+          ?>
+          <p><?php _e("Log format has problems."); ?></p>
+          <p><?php _e("Format is:"); ?></p>
+          <p><?php echo self::get_dashboard_widget_option(self::wid, 'access_log_format') ?></p>
+          <p><?php _e("Log lines look like:"); ?></p>
+          <p><?php echo $e->getMessage() ?></p>
+          <a href="https://github.com/kassner/log-parser"><?php _e("See more info on log format strings here") ?></a>
+          <?php
+          return;
+        }
+        if (gettype($lines[0]) == "string") {
+          ?>
+          <p><?php _e("No log exceptions.") ?></p>
+          <?php
+        } else
+          require_once( 'widget.php' );
     }
 
     /**
@@ -200,7 +209,7 @@ class Dashboard_Log_Monitor_Widget {
     /**
      * Gets access log lines
      */
-    public static function get_access_log_lines($errors = null,$line_count = null)
+    public static function get_access_log_lines($line_count = null)
     {
         $filename = self::get_dashboard_widget_option(self::wid, 'access_log_path');
         if (!$line_count)
@@ -209,8 +218,11 @@ class Dashboard_Log_Monitor_Widget {
         $lines = get_transient( 'access-log-monitoring-lines' );
         if ( false === $lines ) {
              // this code runs when there is no valid transient set
-            $lines = self::last_log_lines($filename,$line_count,$log_format,$errors);
-            set_transient( 'access-log-monitoring-lines', $lines, 30 * MINUTE_IN_SECONDS );
+            try {
+                $lines = self::last_log_lines($filename, $line_count, $log_format);
+                set_transient( 'access-log-monitoring-lines', $lines, 30 * MINUTE_IN_SECONDS );
+            } catch (Exception $e) {
+            }
         }
         return $lines;
 
@@ -228,7 +240,7 @@ class Dashboard_Log_Monitor_Widget {
      * @param integer $lines Amount of lines to return
      */
 
-    private static function last_log_lines($path, $line_count, $log_format, $errors = null, $block_size = 512){
+    private static function last_log_lines($path, $line_count, $log_format, $block_size = 512){
         $lines = array();
 
         // we will always have a fragment of a non-complete line
@@ -243,7 +255,7 @@ class Dashboard_Log_Monitor_Widget {
         $exclude_array = array_filter(explode(",", $exclude_status),'strlen');
 
         // For parsing logs with common log format
-        
+
         $parser = new \Kassner\LogParser\LogParser($log_format);
         $fh = fopen($path, 'r');
         if (!$fh)
@@ -277,14 +289,11 @@ class Dashboard_Log_Monitor_Widget {
             foreach ($new_lines as $line) {
                 if ($line == '')
                     continue;
-                try {
-                    $log_entry = $parser->parse($line);
-                    //Append into lines if log_entry has bad status code
-                    if (!in_array($log_entry->status,$exclude_array))
-                        $parsed_lines[] = $parser->parse($line);
-                } catch (Exception $e) {
-                    ++$errors;
-                }
+                // LogParser FormatException is handled by calling routine
+                $log_entry = $parser->parse($line);
+                //Append into lines if log_entry has bad status code
+                if (!in_array($log_entry->status,$exclude_array))
+                    $parsed_lines[] = $parser->parse($line);
             }
             $lines = array_merge($lines, $parsed_lines);
             $leftover = $split_data[count($split_data) - 1];
