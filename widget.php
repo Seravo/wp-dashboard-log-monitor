@@ -30,10 +30,10 @@ foreach ($lines as $index => $line) {
     <table class="request-info">
       <tr>
         <th>
-          <span class="status-code <?php echo (isset($line->status) ? "code-{$line->status[0]}xx code-{$line->status}" : ''); ?>"><? echo (isset($line->status) ? $line->status : __('status NA')); ?></span>
+          <span class="status-code <?php echo (isset($line->status) ? "code-{$line->status[0]}xx code-{$line->status}" : 'code-na'); ?>"><?php echo (isset($line->status) ? $line->status : __('NA')); ?></span>
         </th>
         <td>
-          <span class="request">"<? echo (isset($line->request) ? $line->request : __('request NA')); ?>"</span>
+          <span class="request">"<?php echo (isset($line->request) ? $line->request : __('request NA')); ?>"</span>
         </td>
       </tr>
       <?php
