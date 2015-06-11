@@ -1,0 +1,17 @@
+{
+  "name": "seravo/wp-dashboard-log-monitor",
+  "type": "wordpress-plugin",
+  "license": "MIT",
+  "description": "Monitor your logs straight from your WordPress admin dashboard",
+  "homepage": "https://github.com/Seravo/wp-dashboard-log-monitor",
+  "authors": [
+    {
+      "name": "Onni Hakala",
+      "email": "onni@seravo.fi",
+      "homepage": "https://github.com/onnimonni"
+    }
+  ],
+  "keywords": [
+    "wordpress", "log", "monitor"
+  ]
+}
