@@ -4,7 +4,7 @@ Tags: dashboard, admin, log, access log, seravo
 Donate link: http://seravo.fi/
 Requires at least: 3.8
 Tested up to: 4.0
-Stable tag: 1.0.3
+Stable tag: 1.0.4
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
@@ -35,6 +35,8 @@ Source available at https://github.com/Seravo/wp-dashboard-log-monitor
 == Changelog ==
 
 Note that complete commit log is available at https://github.com/Seravo/wp-dashboard-log-monitor/commits/master
+= 1.0.4 =
+Fixed php tags which were not working in all systems
 
 = 1.0.3 =
 Fixed User permissions. Only admins can see this widget
