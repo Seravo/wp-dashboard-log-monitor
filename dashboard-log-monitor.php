@@ -5,7 +5,7 @@
  * Description: Take a sneak peek on your access logs from the wordpress dashboard.
  * Author: Onni Hakala / Seravo Oy
  * Author URI: http://seravo.fi
- * Version: 1.0.3
+ * Version: 1.0.4
  * License: GPLv2 or later
 */
 /** Copyright 2014 Seravo Oy
