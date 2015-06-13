@@ -13,5 +13,8 @@
   ],
   "keywords": [
     "wordpress", "log", "monitor"
-  ]
+  ],
+  "require": {
+    "kassner/log-parser": "~1.0"
+  }
 }

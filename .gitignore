@@ -1,1 +1,7 @@
 .DS_Store
+
+# Ignore composer packages in git
+vendor
+
+# We don't want lock anything here
+composer.lock

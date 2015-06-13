@@ -20,8 +20,15 @@
 
 define('__ROOT__', dirname(__FILE__));
 
-require_once __ROOT__."/log-parser/src/Kassner/LogParser/FormatException.php";
-require_once __ROOT__."/log-parser/src/Kassner/LogParser/LogParser.php";
+/*
+ * Idea in this is to use composer if it exists
+ * We still want to be compatible with wordpress.org
+ * and bundle composer requirements in the wordpress.org repo
+ */
+// Fallback into local libraries if composer isn't available
+if (!class_exists('Composer\Autoload\ClassLoader')) {
+  require_once(__DIR__ . '/vendor/autoload.php');
+}
 
 function load_custom_wp_admin_style() {
     // Only allow admins to use this
@@ -41,16 +48,25 @@ class Dashboard_Log_Monitor_Widget {
      */
     const wid = 'dashboard_log_monitor';
     /** By Default exclude status codes:
-     * - successful requests
-     * - redirects
-     * - not modified
+     * - 200 successful requests
+     * - 301 302 redirects
+     * - 304 not modified
      * - 499 because nginx prints these everytime when wp-cron is activated
      */
     const default_exclude = "200,301,302,304,499";
     const default_line_count = 10;
     const default_extended_info = false;
-    const default_access_log_path = '/data/log/nginx-access.log';
-    const default_access_log_format = '%h %a %{User-Identifier}i %u %t "%r" %>s %b "%{Referer}i" "%{User-Agent}i" %{Cache-Status}i %T';
+    # TODO: try all files in directory: dirname(ini_get('error_log'))
+    const default_access_log_path = "/data/log/nginx-access.log";
+    # TODO: Try these known log formats
+    const default_access_log_formats = [
+        # WP-Palvelu production
+        '%h %a %{User-Identifier}i %u %t "%r" %>s %b "%{Referer}i" "%{User-Agent}i" %{Cache-Status}i %T',
+        # WP-Palvelu vagrant
+        '%h %u %{User-Identifier}i %t "%r" %>s %b "%{Referer}i" "%{User-Agent}i" %{Cache-Status}i',
+        # Default nginx
+        '%h %l %u %t "%r" %>s %O "%{Referer}i" \"%{User-Agent}i"'
+    ];
 
     /**
      * Hook to wp_dashboard_setup to add the widget.
@@ -59,25 +75,25 @@ class Dashboard_Log_Monitor_Widget {
         // Only allow admins to use this
         if (!current_user_can('activate_plugins')) { return; }
 
-        //Register widget settings...
+        // Register widget settings...
         self::update_dashboard_widget_options(
-            self::wid,                                  //The  widget id
-            array(                                      //Associative array of options & default values
+            self::wid,                                  // The  widget id
+            array(                                      // Associative array of options & default values
                 'line_count' => self::default_line_count,
                 'exclude_status_codes' => self::default_exclude,
                 'extended_info' => self::default_extended_info,
                 'access_log_path' => self::default_access_log_path,
-                'access_log_format' => self::default_access_log_format
+                'access_log_format' => self::default_access_log_formats[0]
             ),
-            true                                        //Add only (will not update existing options)
+            true                                        // Add only (will not update existing options)
         );
 
-        //Register the widget...
+        // Register the widget...
         wp_add_dashboard_widget(
-            self::wid,                                  //A unique slug/ID
-            __( 'Log monitor', 'nouveau' ),      //Visible name for the widget
-            array('Dashboard_Log_Monitor_Widget','widget'),      //Callback for the main widget content
-            array('Dashboard_Log_Monitor_Widget','config')       //Optional callback for widget configuration content
+            self::wid,                                  // A unique slug/ID
+            __( 'Log monitor', 'nouveau' ),      // Visible name for the widget
+            array('Dashboard_Log_Monitor_Widget','widget'),      // Callback for the main widget content
+            array('Dashboard_Log_Monitor_Widget','config')       // Optional callback for widget configuration content
         );
     }
 
