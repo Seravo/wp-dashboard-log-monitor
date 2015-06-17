@@ -1,6 +1,6 @@
 Wordpress Dashboard Log Monitor
 ===============================
-[![Build Status](https://travis-ci.org/onnimonni/wp-dashboard-log-monitor.svg?branch=master)](https://travis-ci.org/onnimonni/wp-dashboard-log-monitor)
+[![Build Status](https://api.travis-ci.org/Seravo/wp-dashboard-log-monitor.svg?branch=master)](https://travis-ci.org/Seravo/wp-dashboard-log-monitor)
 
 Have a look on your access logs from the wordpress dashboard.
 The plugin automatically seeks problematic lines from access logs and displays those in admin dashboard.
