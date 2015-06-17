@@ -32,7 +32,7 @@
   </p>
   <p>
     <label><?php _e("Access log format:"); ?></label><br>
-    <input type="text" name="accessLogFormat" value="<?php echo(htmlspecialchars(self::get_dashboard_widget_option(self::wid, 'access_log_format',self::default_access_log_formats[0]))); ?>" />
+    <input type="text" name="accessLogFormat" value="<?php echo(htmlspecialchars(self::get_dashboard_widget_option(self::wid, 'access_log_format',self::default_access_log_format))); ?>" />
   </p>
   <p>
     <label><?php _e("Access logfile:"); ?></label><br>

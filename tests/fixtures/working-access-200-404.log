@@ -1,0 +1,7 @@
+wp-palvelu.fi 57.234.111.1 - - [14/Jun/2015:11:11:13 +0300] "GET /wp-admin/admin-ajax.php?action=heartbeat HTTP/1.1" 200 59 "-" "Zabbix" - 0.668
+wp-palvelu.fi 57.233.111.1 - - [14/Jun/2015:11:11:13 +0300] "GET /wp-login.php HTTP/1.1" 200 3329 "-" "Zabbix" - 0.135
+wp-palvelu.fi 57.233.111.1 - - [14/Jun/2015:11:09:50 +0300] "GET / HTTP/1.1" 200 20576 "-" "Mozilla/5.0+(compatible; UptimeRobot/2.0; http://www.uptimerobot.com/)" - 0.682
+localhost - - - [14/Jun/2015:11:10:02 +0300] "GET /wp-admin/admin-ajax.php?action=heartbeat HTTP/1.1" 404 59 "-" "Go 1.1 package http" - 0.831
+localhost - - - [14/Jun/2015:11:10:33 +0300] "GET /wp-admin/admin-ajax.php?action=heartbeat HTTP/1.1" 404 59 "-" "Go 1.1 package http" - 0.729
+localhost - - - [14/Jun/2015:11:11:04 +0300] "GET /wp-admin/admin-ajax.php?action=heartbeat HTTP/1.1" 404 59 "-" "Go 1.1 package http" - 1.040
+wp-palvelu.fi 57.233.111.1 - - [14/Jun/2015:11:11:13 +0300] "GET /wp-admin/admin-ajax.php?action=heartbeat HTTP/1.1" 200 59 "-" "Zabbix" - 0.668

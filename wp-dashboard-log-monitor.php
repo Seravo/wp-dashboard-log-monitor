@@ -18,15 +18,15 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-define('__ROOT__', dirname(__FILE__));
 
 /*
- * Idea in this is to use composer if it exists
- * We still want to be compatible with wordpress.org
+ * Idea in this is to use composer if it exists.
+ * Usually composer repos are more up to date than wordpress.org
+ * But we still want to be compatible with wordpress.org
  * and bundle composer requirements in the wordpress.org repo
  */
-// Fallback into local libraries if composer isn't available
-if (!class_exists('Composer\Autoload\ClassLoader')) {
+// Fallback into local libraries if composer isn't already available
+if (!class_exists('Kassner\LogParser\LogParser')) {
   require_once(__DIR__ . '/vendor/autoload.php');
 }
 
@@ -34,7 +34,7 @@ function load_custom_wp_admin_style() {
     // Only allow admins to use this
     if (!current_user_can('activate_plugins')) { return; }
 
-    wp_register_style( 'custom_wp_admin_css', plugins_url('/admin-style.css', __FILE__), false, '1.0.0' );
+    wp_register_style( 'custom_wp_admin_css', plugins_url('/css/admin-style.css', __FILE__), false, '1.0.0' );
     wp_enqueue_style( 'custom_wp_admin_css' );
 }
 add_action( 'admin_enqueue_scripts', 'load_custom_wp_admin_style' );
@@ -58,15 +58,8 @@ class Dashboard_Log_Monitor_Widget {
     const default_extended_info = false;
     # TODO: try all files in directory: dirname(ini_get('error_log'))
     const default_access_log_path = "/data/log/nginx-access.log";
-    # TODO: Try these known log formats
-    const default_access_log_formats = [
-        # WP-Palvelu production
-        '%h %a %{User-Identifier}i %u %t "%r" %>s %b "%{Referer}i" "%{User-Agent}i" %{Cache-Status}i %T',
-        # WP-Palvelu vagrant
-        '%h %u %{User-Identifier}i %t "%r" %>s %b "%{Referer}i" "%{User-Agent}i" %{Cache-Status}i',
-        # Default nginx
-        '%h %l %u %t "%r" %>s %O "%{Referer}i" \"%{User-Agent}i"'
-    ];
+    # WP-Palvelu production format
+    const default_access_log_format = '%h (%a|-) %{User-Identifier}i %u %t "%r" %>s %b "%{Referer}i" "%{User-Agent}i" %{Cache-Status}i %T';
 
     /**
      * Hook to wp_dashboard_setup to add the widget.
@@ -83,7 +76,7 @@ class Dashboard_Log_Monitor_Widget {
                 'exclude_status_codes' => self::default_exclude,
                 'extended_info' => self::default_extended_info,
                 'access_log_path' => self::default_access_log_path,
-                'access_log_format' => self::default_access_log_formats[0]
+                'access_log_format' => self::default_access_log_format
             ),
             true                                        // Add only (will not update existing options)
         );
@@ -105,8 +98,13 @@ class Dashboard_Log_Monitor_Widget {
           echo "logfile: ".self::get_dashboard_widget_option(self::wid, 'access_log_path')." not found!";
           return;
         }
+        // check that everything is working correctly
         try {
-          $lines = self::last_log_lines(self::get_dashboard_widget_option(self::wid, 'access_log_path'), 1,self::get_dashboard_widget_option(self::wid, 'access_log_format'));
+            $path = self::get_dashboard_widget_option(self::wid, 'access_log_path');
+            $count = 1;
+            $format = self::get_dashboard_widget_option(self::wid, 'access_log_format');
+            $exclude = self::get_dashboard_widget_option(self::wid, 'exclude_status_codes');
+            $lines = self::last_log_lines($path,$count,$format,$exclude);
         } catch (Exception $e) {
           ?>
           <p><?php _e("Log format has problems."); ?></p>
@@ -123,7 +121,7 @@ class Dashboard_Log_Monitor_Widget {
           <p><?php _e("No log exceptions.") ?></p>
           <?php
         } else
-          require_once( 'widget.php' );
+          require_once( 'lib/widget.php' );
     }
 
     /**
@@ -132,7 +130,7 @@ class Dashboard_Log_Monitor_Widget {
      * This is what will display when an admin clicks 'edit'
      */
     public static function config() {
-        require_once( 'widget-config.php' );
+        require_once( 'lib/widget-config.php' );
     }
 
     /**
@@ -230,12 +228,16 @@ class Dashboard_Log_Monitor_Widget {
         $filename = self::get_dashboard_widget_option(self::wid, 'access_log_path');
         if (!$line_count)
             $line_count = self::get_dashboard_widget_option(self::wid, 'line_count');
+        // Log format
         $log_format = self::get_dashboard_widget_option(self::wid, 'access_log_format');
+        // Exclude status codes
+        $exclude_status = self::get_dashboard_widget_option(self::wid, 'exclude_status_codes');
+        // Lines which were parsed earlier
         $lines = get_transient( 'access-log-monitoring-lines' );
         if ( false === $lines ) {
              // this code runs when there is no valid transient set
             try {
-                $lines = self::last_log_lines($filename, $line_count, $log_format);
+                $lines = self::last_log_lines($filename, $line_count, $log_format,$exclude_status);
                 set_transient( 'access-log-monitoring-lines', $lines, 30 * MINUTE_IN_SECONDS );
             } catch (Exception $e) {
             }
@@ -256,70 +258,71 @@ class Dashboard_Log_Monitor_Widget {
      * @param integer $lines Amount of lines to return
      */
 
-    private static function last_log_lines($path, $line_count, $log_format, $block_size = 512){
-        $lines = array();
+    public static function last_log_lines($path, $line_count, $log_format, $exclude_status, $block_size = 512){
+      if (!file_exists($path))
+        return false;
 
-        // we will always have a fragment of a non-complete line
-        // keep this in here till we have our next entire line.
-        $leftover = "";
+      // Store parsed lines here
+      $lines = array();
 
-        // Exclude status codes
-        $exclude_status = self::get_dashboard_widget_option(self::wid, 'exclude_status_codes');
+      // we will always have a fragment of a non-complete line
+      // keep this in here till we have our next entire line.
+      $leftover = "";
 
-        // Remove whitespace and empty values
-        $exclude_status = preg_replace('/\s+/', '', $exclude_status);
-        $exclude_array = array_filter(explode(",", $exclude_status),'strlen');
+      // Remove whitespace and empty values
+      $exclude_status = preg_replace('/\s+/', '', $exclude_status);
+      $exclude_array = array_filter(explode(",", $exclude_status),'strlen');
 
-        // For parsing logs with common log format
+      // For parsing logs with common log format
+      $parser = new \Kassner\LogParser\LogParser($log_format);
+      $fh = fopen($path, 'r');
+      if (!$fh)
+        return false;
+      // go to the end of the file
+      fseek($fh, 0, SEEK_END);
+      do{
+          // need to know whether we can actually go back
+          // $block_size bytes
+          $can_read = $block_size;
+          if(ftell($fh) < $block_size){
+              $can_read = ftell($fh);
+          }
 
-        $parser = new \Kassner\LogParser\LogParser($log_format);
-        $fh = fopen($path, 'r');
-        if (!$fh)
-            return false;
-        // go to the end of the file
-        fseek($fh, 0, SEEK_END);
-        do{
-            // need to know whether we can actually go back
-            // $block_size bytes
-            $can_read = $block_size;
-            if(ftell($fh) < $block_size){
-                $can_read = ftell($fh);
-            }
+          // go back as many bytes as we can
+          // read them to $data and then move the file pointer
+          // back to where we were.
+          fseek($fh, -$can_read, SEEK_CUR);
+          $data = fread($fh, $can_read);
+          $data .= $leftover;
+          fseek($fh, -$can_read, SEEK_CUR);
 
-            // go back as many bytes as we can
-            // read them to $data and then move the file pointer
-            // back to where we were.
-            fseek($fh, -$can_read, SEEK_CUR);
-            $data = fread($fh, $can_read);
-            $data .= $leftover;
-            fseek($fh, -$can_read, SEEK_CUR);
-
-            // split lines by \n. Then reverse them,
-            // now the last line is most likely not a complete
-            // line which is why we do not directly add it, but
-            // append it to the data read the next time.
-            $split_data = array_reverse(explode("\n", $data));
-            $new_lines = array_slice($split_data, 0, -1);
-            $parsed_lines = [];
-            // Check conditions on new lines
-            foreach ($new_lines as $line) {
-                if ($line == '')
-                    continue;
-                // LogParser FormatException is handled by calling routine
-                $log_entry = $parser->parse($line);
-                //Append into lines if log_entry has bad status code
-                if (!in_array($log_entry->status,$exclude_array))
-                    $parsed_lines[] = $parser->parse($line);
-            }
-            $lines = array_merge($lines, $parsed_lines);
-            $leftover = $split_data[count($split_data) - 1];
-        }
-        while(count($lines) < $line_count && ftell($fh) != 0);
-        if(ftell($fh) == 0){
-            $lines[] = $leftover;
-        }
-        fclose($fh);
-        // Usually, we will read too many lines, correct that here.
-        return array_reverse(array_slice($lines, 0, $line_count));
+          // split lines by \n. Then reverse them,
+          // now the last line is most likely not a complete
+          // line which is why we do not directly add it, but
+          // append it to the data read the next time.
+          $split_data = array_reverse(explode("\n", $data));
+          $new_lines = array_slice($split_data, 0, -1);
+          $parsed_lines = array();
+          // Check conditions on new lines
+          foreach ($new_lines as $line) {
+              if ($line == '')
+                  continue;
+              // LogParser FormatException is handled by calling routine
+              $log_entry = $parser->parse($line);
+              //Append into lines if log_entry has bad status code
+              if (!in_array($log_entry->status,$exclude_array))
+                  $parsed_lines[] = $parser->parse($line);
+          }
+          $lines = array_merge($lines, $parsed_lines);
+          $leftover = $split_data[count($split_data) - 1];
+      }
+      while(count($lines) < $line_count && ftell($fh) != 0);
+      if(ftell($fh) == 0){
+          //Parse the last line too
+          $lines[] = $parser->parse($leftover);
+      }
+      fclose($fh);
+      // Usually, we will read too many lines, correct that here.
+      return array_reverse(array_slice($lines, 0, $line_count));
     }
 }

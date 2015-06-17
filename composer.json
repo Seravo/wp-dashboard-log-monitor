@@ -1,5 +1,5 @@
 {
-  "name": "seravo/wp-dashboard-log-monitor",
+  "name": "onnimonni/wp-dashboard-log-monitor",
   "type": "wordpress-plugin",
   "license": "MIT",
   "description": "Monitor your logs straight from your WordPress admin dashboard",
@@ -12,7 +12,7 @@
     }
   ],
   "keywords": [
-    "wordpress", "log", "monitor"
+    "wordpress","access", "log", "monitor", "nginx"
   ],
   "require": {
     "kassner/log-parser": "~1.0"
