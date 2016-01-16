@@ -3,7 +3,7 @@ Contributors: onnimonni, ottok
 Tags: dashboard, admin, log, access log, seravo
 Donate link: http://seravo.fi/
 Requires at least: 3.8
-Tested up to: 4.0
+Tested up to: 4.4.1
 Stable tag: 1.0.4
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html

@@ -8,7 +8,7 @@
  * Version: 1.0.4
  * License: GPLv2 or later
 */
-/** Copyright 2014 Seravo Oy
+/** Copyright 2014-2016 Seravo Oy
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
