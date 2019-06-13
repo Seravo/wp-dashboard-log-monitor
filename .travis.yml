@@ -28,7 +28,7 @@ before_script:
   - wget https://phar.phpunit.de/phpunit-$PHPUNIT_VERSION.phar -O /tmp/phpunit; chmod +x /tmp/phpunit
 
   # Install wordpress testing template
-  - git clone https://github.com/Koodimonni/wordpress-test-template wp-tests
+  - git clone https://github.com/Seravo/wordpress-test-template wp-tests
   - bash wp-tests/bin/install-wp-tests.sh test root '' localhost $WP_VERSION
 
 script:
